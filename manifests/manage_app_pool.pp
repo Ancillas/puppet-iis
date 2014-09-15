@@ -1,9 +1,17 @@
 #
-define iis::manage_app_pool($app_pool_name = $title, $enable_32_bit = false, $managed_runtime_version = 'v4.0', $managed_pipeline_mode = 'Integrated', $ensure = 'present') {
+define iis::manage_app_pool(
+  $app_pool_name           = $title,
+  $enable_32_bit           = false,
+  $managed_runtime_version = 'v4.0',
+  $managed_pipeline_mode   = 'Integrated',
+  $start_mode              = 'OnDemand',
+  $ensure                  = 'present'
+) {
 
   validate_bool($enable_32_bit)
   validate_re($managed_runtime_version, ['^(v2\.0|v4\.0)$'])
   validate_re($managed_pipeline_mode, ['^(Integrated|Classic)$'])
+  validate_re($start_mode, ['^(OnDemand|AlwaysRunning)$'])
   validate_re($ensure, '^(present|installed|absent|purged)$', 'ensure must be one of \'present\', \'installed\', \'absent\', \'purged\'')
 
   include 'param::powershell'
@@ -39,6 +47,16 @@ define iis::manage_app_pool($app_pool_name = $title, $enable_32_bit = false, $ma
       require   => Exec["Create-${app_pool_name}"],
       logoutput => true,
     }
+
+    exec { "StartMode-${app_pool_name}" :
+      path      => "${iis::param::powershell::path};${::path}",
+      command   => "${iis::param::powershell::command} -Command \"Import-Module WebAdministration; Set-ItemProperty \\\"IIS:\\AppPools\\${app_pool_name}\\\" startMode ${start_mode}\"",
+      onlyif    => "${iis::param::powershell::command} -Command \"Import-Module WebAdministration; if((Get-ItemProperty \\\"IIS:\\AppPools\\${app_pool_name}\\\" startMode).CompareTo('${start_mode}') -eq 0) { exit 1 } else { exit 0 }\"",
+      require   => Exec["Create-${app_pool_name}"],
+      logoutput => true,
+    }
+
+    exec { ""}
   } else {
     exec { "Delete-${app_pool_name}" :
       command   => "${iis::param::powershell::command} -Command \"Import-Module WebAdministration; Remove-Item \\\"IIS:\\AppPools\\${app_pool_name}\\\" -Recurse\"",
