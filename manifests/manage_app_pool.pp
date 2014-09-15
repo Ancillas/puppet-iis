@@ -56,7 +56,6 @@ define iis::manage_app_pool(
       logoutput => true,
     }
 
-    exec { ""}
   } else {
     exec { "Delete-${app_pool_name}" :
       command   => "${iis::param::powershell::command} -Command \"Import-Module WebAdministration; Remove-Item \\\"IIS:\\AppPools\\${app_pool_name}\\\" -Recurse\"",
