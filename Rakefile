@@ -20,6 +20,8 @@ PuppetLint.configuration.send('disable_class_parameter_defaults')
 PuppetLint.configuration.send('disable_class_inherits_from_params_class')
 # http://puppet-lint.com/checks/quoted_booleans/
 PuppetLint.configuration.send('disable_quoted_booleans')
+# http://puppet-lint.com/checks/autoloader_layout/
+PuppetLint.configuration.send('disable_autoloader_layout')
 
 exclude_paths = [
   "pkg/**/*",
